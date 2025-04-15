@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  # Generate a unique name for each run automatically
+  generateName: simple-ci-run-
+spec:
+  # Reference the Pipeline we want to run
+  pipelineRef:
+    name: simple-ci-pipeline
+
+  # Provide values for the Pipeline's parameters
+  params:
+    - name: repo-url
+      value: https://github.com/pandelig/github-actions-tekton-demo.git # <-- CHANGE THIS
+
+  # Define HOW the pipeline's workspace(s) will be provisioned
+  workspaces:
+    - name: shared-data # Matches the workspace name in the Pipeline yaml
+      persistentVolumeClaim:
+        claimName: pipeline-pvc # Matches the name in the PersistentVolumeClaim yaml
+
+  # Optional: Define service account if tasks need K8s permissions
+  # serviceAccountName: tekton-pipelines-executor

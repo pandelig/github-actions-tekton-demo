@@ -1,0 +1,43 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: simple-ci-pipeline
+spec:
+  description: "Pipeline to clone a Python repo and lint the code."
+
+  # Declare the workspace needed by the ENTIRE pipeline
+  workspaces:
+    - name: shared-data
+      description: Workspace for source code shared between tasks.
+
+  # Declare parameters the pipeline expects
+  params:
+    - name: repo-url
+      type: string
+      description: The Git repository URL to clone.
+
+  # Define the sequence of tasks
+  tasks:
+    # Task 1: Fetch the source code
+    - name: fetch-repo
+      taskRef:
+        name: git-clone # Reference the installed git-clone task
+      params:
+        - name: url
+          value: $(params.repo-url) # Pass pipeline param to task param
+      workspaces:
+        - name: output # The git-clone task calls its output workspace 'output'
+          workspace: shared-data # Map it to the pipeline's 'shared-data' workspace
+
+    # Task 2: Run the linter (runs AFTER fetch-repo completes successfully)
+    - name: lint-code
+      runAfter: ["fetch-repo"] # Explicitly state dependency
+      taskRef:
+        name: python-lint # Reference our custom lint task
+      workspaces:
+        - name: source # The python-lint task calls its input workspace 'source'
+          workspace: shared-data # Map it to the pipeline's 'shared-data' workspace
+      # Optionally pass parameters to the lint task if needed, e.g.:
+      # params:
+      #   - name: python-image
+      #     value: python:3.11-slim

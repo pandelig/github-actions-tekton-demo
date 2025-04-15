@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: python-lint
+spec:
+  description: "This task clones a repository, installs dependencies, and runs flake8 linter."
+
+  # Declares the need of a workspace named `source`, where the source code will be provided
+  workspaces:
+    - name: source
+      description: The workspace containing the source code.
+
+  # Define input parameters (optional, but good practice)
+  params:
+    - name: python-image
+      description: The python image to use
+      type: string
+      default: python:3.10-slim # Use a slim base image
+
+  # Define the steps to execute
+  steps:
+    - name: run-linter
+      image: $(params.python-image) # Possible due to Tekton's built-in variable substitution mechanism
+      workingDir: $(workspaces.source.path) # Tells the step to run inside the directory provided by the `source` workspace.
+      script: |
+        #!/usr/bin/env bash
+        set -e # Exit immediately if a command exits with a non-zero status.
+        echo "--------- INSTALLING DEPENDENCIES ---------"
+        echo "Current directory: $(pwd)" 
+        echo "Listing directory contents with 'ls -la':"
+        ls -la
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        echo "-------------------------------------------"
+        echo "--------- RUNNING FLAKE8 LINTER -----------"
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        echo "-------------------------------------------"
