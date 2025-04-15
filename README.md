@@ -1,6 +1,6 @@
 # CI/CD Tutorials: GitHub Actions and Tekton
 
-This repository accompanies a series of blog posts that introduce CI/CD using GitHub Actions and Tekton.
+This repository accompanies my series of blog posts that introduce CI/CD using GitHub Actions and Tekton.
 
 ## Tutorial Series
 
